@@ -1,0 +1,21 @@
+category_id,category_name,category_level,main_category_id
+1,men's shoes,1,0
+2,accessories,1,0
+3,men's clothing,1,0
+4,beauty & health,1,0
+5,sports & fitness,1,0
+6,Formal Shoes,2,1
+7,Casual Shoes,2,1
+8,Bags & Luggage,2,2
+9,Gold & Diamond Jewellery,2,2
+10,Sunglasses,2,2
+11,Handbags & Clutches,2,2
+12,Innerwear,2,3
+13,Jeans,2,3
+14,Shirts,2,3
+15,Make-up,2,4
+16,Luxury Beauty,2,4
+17,Value Bazaar,2,4
+18,Strength Training,2,5
+19,Fitness Accessories,2,5
+20,Watches,2,2

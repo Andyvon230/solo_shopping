@@ -1,0 +1,113 @@
+<!-- templates/home.html -->
+{% extends '../base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block body_block %}
+    <div class="mt-5 text-center" style="margin-top: 100px;">
+        <h1>Welcome to Shopping Mall!</h1>
+    </div>
+
+    <div class="mt-5 text-center" style="margin-top: 100px;">
+        <h2>Merchandise List</h2>
+    </div>
+
+
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <form method="get">
+            <div class="form-group">
+                <label for="search_keyword">Search:</label>
+                <input type="text" class="form-control" id="search_keyword" name="search_keyword" placeholder="Enter country name" value="{{ search_keyword|default_if_none:"" }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</div>
+
+{% if is_empty %}
+<div class="alert alert-warning text-center" role="alert">
+    No country found with the name "{{ search_keyword }}".
+</div>
+{% elif merchandise %}
+    <!-- Display filtered results -->
+    <div class="container-fluid mt-5">
+        <div class="row row-cols-1 row-cols-md-3">
+            {% for item in merchandise %}
+                <div class="col mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <h5 class="card-title">
+                                    <strong>{{ item.name }}</strong> - ${{ item.price }}
+                                </h5>
+{#                                <div class="d-inline-block">#}
+{#                                    <a class="btn btn-primary btn-sm" href="{% url 'countries_data' id=item.id %}" role="button">Details</a>#}
+{#                                </div>#}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <!-- Display all cards if no filter applied -->
+    <div class="container-fluid mt-5">
+        <div class="row row-cols-1 row-cols-md-3">
+            {% for item in countries %}
+                <div class="col mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">{{ item.country_name }} - {{ item.income_group }} - {{item.region}}</h5>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+    
+
+<div class="d-flex justify-content-center">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            <ul class="pagination">
+                {% if merchandise.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ merchandise.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+                <!-- Display previous two pages if available -->
+                {% if merchandise.number|add:-2 > 0 %}
+                    <li class="page-item"><a class="page-link" href="?page={{ merchandise.number|add:-2 }}">{{ merchandise.number|add:-2 }}</a>
+                    </li>
+                {% endif %}
+                {% if merchandise.number|add:-1 > 0 %}
+                    <li class="page-item"><a class="page-link" href="?page={{ merchandise.number|add:-1 }}">{{ merchandise.number|add:-1 }}</a>
+                    </li>
+                {% endif %}
+
+                <!-- Current Page -->
+                <li class="page-item active"><a class="page-link">{{ merchandise.number }}</a></li>
+
+                <!-- Display next two pages if available -->
+                {% if merchandise.number|add:1 <= merchandise.paginator.num_pages %}
+                    <li class="page-item"><a class="page-link" href="?page={{ merchandise.number|add:1 }}">{{ merchandise.number|add:1 }}</a>
+                    </li>
+                {% endif %}
+                {% if merchandise.number|add:2 <= merchandise.paginator.num_pages %}
+                    <li class="page-item"><a class="page-link" href="?page={{ merchandise.number|add:2 }}">{{ merchandise.number|add:2 }}</a>
+                    </li>
+                {% endif %}
+
+                {% if merchandise.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ merchandise.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ merchandise.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </ul>
+    </nav>
+</div>
+{% endblock %}
