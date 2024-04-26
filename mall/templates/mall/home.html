@@ -50,15 +50,17 @@
                             {% else %}{% static 'img/no_image.png' %}{% endif %}" alt="{{ item.name }}">
                             <h5 class="card-title text-center text-overflow"><strong>{{ item.name }}</strong></h5>
                             <h5 class="card-title text-center">${{ item.price }}</h5>
-                            <div class="d-flex justify-content-end align-items-end">
-                                <form method="post" action="{% url 'add_to_cart' item.id %}">
-                                    {% csrf_token %}
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control text-center" name="quantity" value="1" min="1" style="max-width: 60px; margin-right: 10px;">
-                                        <button type="submit" class="btn btn-primary">add</button>
-                                    </div>
-                                </form>
-                            </div>
+                            {% if user.groups.all.0.name == 'user' %}
+                                <div class="d-flex justify-content-end align-items-end">
+                                    <form method="post" action="{% url 'add_to_cart' item.id %}">
+                                        {% csrf_token %}
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control text-center" name="quantity" value="1" min="1" style="max-width: 60px; margin-right: 10px;">
+                                            <button type="submit" class="btn btn-primary">add</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% endif %} 
                         </div>
                     </div>
                 </div>

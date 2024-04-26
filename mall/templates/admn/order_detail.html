@@ -1,0 +1,15 @@
+{% extends "../base.html" %}
+
+{% block title %}Order Detail{% endblock %}
+
+{% block body_block %}
+    <h2>Order Detail</h2>
+    <strong>Order #{{ order.id }}</strong> placed on {{ order.created_at|date:"Y-m-d H:i" }}
+    <ul>
+        {% for item in order.items.all %}
+            <li>{{ item.quantity }}x {{ item.merchandise.name }} at ${{ item.price }}</li>
+        {% endfor %}
+    </ul>
+    Total: ${{ order.total_price }}
+    <a href="{% url 'order_list' %}">Back to order list</a>
+{% endblock %}

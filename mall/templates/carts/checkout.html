@@ -15,7 +15,7 @@
         {% endfor %}
     </ul>
     <p>total price:{{ total_price }}</p>
-    <form action="{% url 'confirm_checkout' %}" method="post">
+    <form action="{% url 'success' %}" method="post">
         {% csrf_token %}
         <button type="submit">confirm checkout</button>
     </form>

@@ -1,0 +1,12 @@
+{% extends "../base.html" %}
+{% load static %}
+
+{% block title %}Admin Home{% endblock %}
+
+
+{% block body_block %}
+    <h2>Admin Home</h2>
+    
+{#    <a href="{% url 'admin_charts' %}">Charts</a>#}
+    <a href="{% url 'order_list' %}">Orders</a>
+{% endblock %}

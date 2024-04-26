@@ -73,7 +73,47 @@ class Merchandise(models.Model):
 
 
 class Cart(models.Model):
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     merchandise = models.ForeignKey(Merchandise, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     added_time = models.DateTimeField(auto_now_add=True)
+    is_valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.id
+
+    class Meta:
+        db_table = 'cart'
+        verbose_name = 'Cart'
+        verbose_name_plural = 'Carts'
+
+
+class Order(models.Model):
+    total_price = models.FloatField(default=0.0)
+    create_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username}"
+
+    class Meta:
+        db_table = 'order'
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    merchandise = models.ForeignKey(Merchandise, on_delete=models.CASCADE)
+    price = models.FloatField()
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantity} of {self.merchandise.name}"
+
+    class Meta:
+        db_table = 'order_item'
+        verbose_name = 'Order Item'
+        verbose_name_plural = 'Order Items'

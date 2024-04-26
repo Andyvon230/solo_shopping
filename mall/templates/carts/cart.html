@@ -5,7 +5,19 @@
 
 {% block body_block %}
     <h2>Cart</h2>
+    
+    {% if messages %}
+        <div class="alert alert-danger" role="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
      <ul>
+         {% if not carts %}
+         <p>There are no items in your cart.</p>
+         {% else %}
          {% for cart in carts %}
          <li>
              <h3>{{ cart.merchandise.name }}</h3>
@@ -13,7 +25,12 @@
              <p>quantity：{{ cart.quantity }}</p>
          </li>
          {% endfor %}
+         {% endif %}
      </ul>
      <p>total price:{{ total_price }}</p>
-     <a href="{% url 'checkout' %}">checkout</a>
+    <form action="{% url 'checkout' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="total_price" value="{{ total_price }}">
+        <button type="submit">confirm checkout</button>
+    </form>
 {% endblock %}

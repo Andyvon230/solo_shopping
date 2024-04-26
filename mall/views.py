@@ -1,7 +1,9 @@
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -55,28 +57,97 @@ def add_to_cart(request, item_id):
 
 
 def cart(request):
-    carts = Cart.objects.filter(user=request.user, is_valid=True)
-    total_price = 0.00
-    for cart in carts:
-        merchandise = MerchandiseDiscount.objects.filter(merchandise=cart.merchandise, is_valid=True).first()
-        if merchandise:
-            cart.merchandise.price = merchandise.discount
-            total_price += merchandise.discount * cart.quantity
-        else:
-            total_price += cart.merchandise.price * cart.quantity
-    return render(request, 'carts/cart.html', {'carts': carts, 'total_price': total_price})
+    if not request.user.is_authenticated:
+        return HttpResponse("User not logged in", status=403)
 
-
-def checkout(request):
-    return render(request, 'carts/checkout.html')
+    try:
+        carts = Cart.objects.filter(user=request.user, is_valid=True)
+        total_price = 0.00
+        for mer in carts:
+            mer_discount = MerchandiseDiscount.objects.filter(merchandise=mer.merchandise, is_valid=True).first()
+            if mer_discount:
+                mer_discount.merchandise.price = mer.discount
+                total_price += mer.discount * mer.quantity
+            else:
+                total_price += mer.merchandise.price * mer.quantity
+        return render(request, 'carts/cart.html', {'carts': carts, 'total_price': total_price})
+    except AttributeError as e:
+        return HttpResponse("AttributeError occurred: " + str(e), status=500)
+    except Exception as e:
+        return HttpResponse("An error occurred: " + str(e), status=500)
 
 
 def confirm_checkout(request):
-    return redirect('success')
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    with transaction.atomic():
+        try:
+            carts = Cart.objects.filter(user=request.user, is_valid=True)
+            if not carts.exists():
+                messages.error(request, "There are no items in your cart.")
+                return redirect('cart')
+
+            # Create order
+            total_price = request.POST.get('total_price')
+            order = Order.objects.create(total_price=total_price, create_user=request.user)
+
+            # Create order items
+            for mer in carts:
+                mer_discount = MerchandiseDiscount.objects.filter(merchandise=mer.merchandise, is_valid=True).first()
+                OrderItem.objects.create(
+                    order=order,
+                    merchandise=mer.merchandise,
+                    price=mer.merchandise.price if not mer_discount else mer_discount.merchandise.price,
+                    quantity=mer.quantity
+                )
+
+                # Optionally, remove items from cart or mark as invalid
+                mer.is_valid = False
+                mer.save()
+
+            messages.success(request, "Your order has been placed successfully.")
+            return redirect('success')
+
+        except Exception as e:
+            # Handle exceptions and possibly roll back the transaction
+            messages.error(request, f"Error completing your order: {str(e)}")
+            return redirect('cart')
 
 
 def success(request):
     return render(request, 'carts/success.html')
+
+
+@login_required
+def order_list(request):
+    if not request.user.is_staff:  # Checks if the user is not an admin
+        return redirect('home')
+
+    # Fetch all orders (admin sees all orders)
+    orders = Order.objects.all().order_by('-created_at')
+
+    is_empty = False
+    if orders.count() == 0:
+        is_empty = True
+
+    paginator = Paginator(orders, 20)  # Show 10 merchandise per page.
+
+    page_number = request.GET.get('page')
+    merchandise = paginator.get_page(page_number)
+
+    # Pass the orders to the template
+    return render(request, 'admn/order_list.html', {'orders': orders, 'is_empty': is_empty})
+
+
+@login_required
+def order_detail(request, order_id):
+    if not request.user.is_staff:  # Ensure only admin can access
+        return redirect('home')
+
+    order = get_object_or_404(Order, id=order_id)
+
+    return render(request, 'admn/order_detail.html', {'order': order})
 
 
 def user_login(request):
@@ -89,8 +160,8 @@ def user_login(request):
             if user is not None:
                 # Redirect based on user type
                 if user.is_superuser:
-                    messages.warning(request, "If you are an admin, please click `Admin Login` to login.")
-                    return redirect('login')
+                    login(request, user)
+                    return HttpResponseRedirect(reverse('admin_home'))
                 else:
                     login(request, user)
                     return HttpResponseRedirect(reverse('home'))
@@ -106,5 +177,9 @@ def user_logout(request):
     return render(request, 'mall/logout.html')
 
 
+def admin_home(request):
+    return render(request, 'admn/admin_home.html')
+
+
 def admin_charts(request):
-    return render(request, 'mall/admin_charts.html')
+    return render(request, 'admn/admin_charts.html')
