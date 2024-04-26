@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
@@ -5,30 +7,34 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
+import plotly.graph_objs as go
+from django.db.models import Sum
 
 from mall.models import *
 
 
 def home(request):
     search_input = request.GET.get('search_input')
+    mer_list = Merchandise.objects.all().select_related(
+        'main_category', 'sub_category'
+    ).prefetch_related('discount_id', 'ratings_id')
     if search_input:
-        mer_list = Merchandise.objects.filter(name__icontains=search_input).select_related('main_category',
-                                                                                           'sub_category').prefetch_related(
-            'discount_id', 'ratings_id')
-    else:
-        mer_list = Merchandise.objects.all().select_related('main_category', 'sub_category').prefetch_related(
-            'discount_id', 'ratings_id')
+        mer_list = mer_list.filter(name__icontains=search_input)
 
     is_empty = False
     if mer_list.count() == 0:
         is_empty = True
 
     paginator = Paginator(mer_list, 12)  # Show 10 merchandise per page.
-
     page_number = request.GET.get('page')
-    merchandise = paginator.get_page(page_number)
+    try:
+        merchandise = paginator.page(page_number)
+    except PageNotAnInteger:
+        merchandise = paginator.page(1)
+    except EmptyPage:
+        merchandise = paginator.page(paginator.num_pages)
 
     return render(request, 'mall/home.html', {
         'search_input': search_input,
@@ -134,7 +140,7 @@ def order_list(request):
     paginator = Paginator(orders, 20)  # Show 10 merchandise per page.
 
     page_number = request.GET.get('page')
-    merchandise = paginator.get_page(page_number)
+    orders = paginator.get_page(page_number)
 
     # Pass the orders to the template
     return render(request, 'admn/order_list.html', {'orders': orders, 'is_empty': is_empty})
@@ -181,5 +187,20 @@ def admin_home(request):
     return render(request, 'admn/admin_home.html')
 
 
+def generate_pie_chart():
+    # Fetch sales data
+    data = OrderItem.objects.values('merchandise__name').filter(order__created_at__range=(datetime.now() - timedelta(days=30), datetime.now())).annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+
+    # Prepare data for the pie chart
+    names = [item['merchandise__name'] for item in data]
+    values = [item['total_quantity'] for item in data]
+
+    # Create the pie chart
+    fig = go.Figure(data=go.Pie(labels=names, values=values))
+
+    return fig.to_html(full_html=False)
+
+
 def admin_charts(request):
-    return render(request, 'admn/admin_charts.html')
+    div = generate_pie_chart()
+    return render(request, 'admn/admin_charts.html', {'pie_div': div})

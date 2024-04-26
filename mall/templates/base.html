@@ -15,8 +15,13 @@
                     <li class="nav-item">
                         {% if user.is_authenticated %}
                             <p>{{ user.username }}, you are logged in as {{ user.groups.all.0.name }}. </p>
-                            <p style="text-align: right;"><a href="{% url 'logout' %}">Logout</a></p>
+                            {% if user.groups.all.0.name == 'admin' %}
+                            <p style="text-align: right;"><a href="{% url 'admin_home' %}">admin home</a></p>
+                            {% endif %}
+                            {% if user.groups.all.0.name != 'admin' %}
                             <p style="text-align: right;"><a href="{% url 'cart' %}">Cart</a></p>
+                            {% endif %}
+                            <p style="text-align: right;"><a href="{% url 'logout' %}">Logout</a></p>
                         {% else %}
                             <p><a href="{% url 'login' %}">Login</a></p>
                         {% endif %}

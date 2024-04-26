@@ -60,7 +60,7 @@
                                         </div>
                                     </form>
                                 </div>
-                            {% endif %} 
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -71,11 +71,25 @@
     <!-- Display all cards if no filter applied -->
     <div class="container-fluid mt-5">
         <div class="row row-cols-1 row-cols-md-3">
-            {% for item in countries %}
+            {% for item in merchandise %}
                 <div class="col mb-4">
                     <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title text-center">{{ item.country_name }} - {{ item.income_group }} - {{item.region}}</h5>
+                            <img class="card-img-top" src="{% if item.image %}{{ item.image }}
+                            {% else %}{% static 'img/no_image.png' %}{% endif %}" alt="{{ item.name }}">
+                            <h5 class="card-title text-center text-overflow"><strong>{{ item.name }}</strong></h5>
+                            <h5 class="card-title text-center">${{ item.price }}</h5>
+                            {% if user.groups.all.0.name == 'user' %}
+                                <div class="d-flex justify-content-end align-items-end">
+                                    <form method="post" action="{% url 'add_to_cart' item.id %}">
+                                        {% csrf_token %}
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control text-center" name="quantity" value="1" min="1" style="max-width: 60px; margin-right: 10px;">
+                                            <button type="submit" class="btn btn-primary">add</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

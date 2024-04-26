@@ -1,4 +1,6 @@
-from django.urls import path
+from django.urls import path, include
+from django.views.generic import RedirectView
+
 from . import views
 
 urlpatterns = [
@@ -12,4 +14,5 @@ urlpatterns = [
     path('admin-home/', views.admin_home, name='admin_home'),
     path('orders/', views.order_list, name='order_list'),
     path('orders/<int:order_id>/', views.order_detail, name='order_detail'),
+    path('admin_charts/', views.admin_charts, name='admin_charts'),
 ]
