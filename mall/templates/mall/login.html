@@ -1,0 +1,25 @@
+{% extends "../base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block body_block %}
+    <div class="mt-5 text-center" style="margin-top: 100px;">
+        <h2>Log in to your account</h2>
+    </div>
+    
+    {% if messages %}
+        <div class="alert alert-danger" role="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="mt-5 text-center" style="margin-top: 100px;">
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Login</button>
+        </form>
+    </div>
+{% endblock %}

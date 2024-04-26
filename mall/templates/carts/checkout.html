@@ -1,0 +1,23 @@
+{% extends "../base.html" %}
+{% load static %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block body_block %}
+    <h2>Checkout</h2>
+    <ul>
+        {% for cart in carts %}
+        <li>
+            <h3>{{ cart.merchandise.name }}</h3>
+            <p>price: {{ cart.merchandise.price }}</p>
+            <p>quantity: {{ cart.quantity }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <p>total price:{{ total_price }}</p>
+    <form action="{% url 'confirm_checkout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">confirm checkout</button>
+    </form>
+
+{% endblock %}

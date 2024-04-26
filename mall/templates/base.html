@@ -14,9 +14,10 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         {% if user.is_authenticated %}
-                            <p>You are logged in as {{ user.username }}. <a href="{% url 'logout' %}">Logout</a></p>
+                            <p>{{ user.username }}, you are logged in as {{ user.groups.all.0.name }}. <a href="{% url 'logout' %}">Logout</a></p>
                         {% else %}
-                            <p><a href="{% url 'login' %}">Login</a></p>
+                            <p><a href="{% url 'login' %}">User Login</a></p>
+                            <p><a href="{% url 'admin:index' %}">Admin Login</a></p>
                         {% endif %}
                     </li>
                 </ul>
