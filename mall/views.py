@@ -52,7 +52,7 @@ def add_to_cart(request, item_id):
             # Here you would add logic to add the item to the cart
             merchandise = get_object_or_404(Merchandise, id=item_id)
             quantity = request.POST.get('quantity', 1)
-            cart, created = Cart.objects.get_or_create(user=request.user, merchandise=merchandise)
+            cart, created = Cart.objects.get_or_create(user=request.user, merchandise=merchandise, is_valid=True)
             if not created:
                 cart.quantity += int(quantity)
                 cart.save()

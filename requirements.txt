@@ -37,6 +37,7 @@ pandas==2.2.2
 parse==1.20.1
 parse-type==0.6.2
 parso==0.8.4
+plotly==5.22.0
 prompt-toolkit==3.0.43
 psutil==5.9.8
 pure-eval==0.2.2
